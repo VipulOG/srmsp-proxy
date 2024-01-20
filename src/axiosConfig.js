@@ -1,28 +1,11 @@
 import axios from "axios";
-import { Readable } from "stream";
 import 'dotenv/config';
+import { StringToStream, streamToString } from "./utils.js";
 
 const baseURL = process.env.host;
 const targetURL = "https://sp.srmist.edu.in";
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-
-function streamToString(stream) {
-  const chunks = [];
-  return new Promise((resolve, reject) => {
-    stream.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
-    stream.on("error", (err) => reject(err));
-    stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
-  });
-}
-
-class StringToStream extends Readable {
-  constructor(str) {
-    super();
-    this.push(str);
-    this.push(null);
-  }
-}
 
 const axiosInstance = axios.create({
   baseURL: targetURL,
