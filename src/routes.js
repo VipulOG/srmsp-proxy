@@ -106,12 +106,15 @@ function handleTimetablePage(req, res, html) {
 function handleAttendancePage(req, res, html) {
   const root = parse(html);
 
-  const tables = root.querySelectorAll("table");
-  const attendanceTable = tables[0];
+  const attendanceTable = root.querySelectorAll("table")[0];
   const lastRow = attendanceTable.querySelectorAll("tr").pop();
   const lastRowCells = lastRow.querySelectorAll("td");
   const totalClasses = lastRowCells[1].text.trim();
   const totalPresent = lastRowCells[2].text.trim();
+
+  const sessionStart = root
+    .querySelector("div.card-header.bg-custom.text-white > b:nth-child(2)")
+    .text.trim();
 
   const main = root.querySelector("div");
   main.appendChild(
@@ -157,13 +160,16 @@ async function initCalendar() {
   const timetableData = await postData("${timetablePageURL}");
   
   const events = [];
+
   const today = new Date();
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
+  const sessionStart = new Date("${sessionStart}");
+  const sessionEnd = new Date(sessionStart);
+  sessionEnd.setMonth(sessionEnd.getMonth() + 6);
 
   var expectedTotalClasses = totalClasses;
   var expectedTotalPresent = totalPresent;
 
-  for (let date = new Date(today.valueOf()); date <= lastDayOfMonth; date.setDate(date.getDate() + 1)) {
+  for (let date = new Date(today); date <= sessionEnd; date.setDate(date.getDate() + 1)) {
     const day = date.getDay() - 1;
     const daySchedule = timetableData[day];
     const expectedClasses = (daySchedule) ? Object.keys(daySchedule).length : 0;
@@ -174,7 +180,7 @@ async function initCalendar() {
 
     events.push(
       {
-        date: new Date(date.valueOf()),
+        date: new Date(date),
         title: "Expected Attendance: " + expectedAttendance.toFixed(2) + "%",
       }
     );
