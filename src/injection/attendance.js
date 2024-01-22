@@ -116,6 +116,7 @@ function showMarkModal(date, daySchedule) {
       const data = getData(dateStr);
       const checked =
         !data.attendance || (data.attendance && data.attendance.includes(key));
+      const holiday = data.holiday;
       rows += `
         <tr>
           <td>${key}</td>
@@ -123,6 +124,7 @@ function showMarkModal(date, daySchedule) {
           <td><input type="checkbox" class="markCheckbox"
            value="${key}"
            ${checked ? "checked" : ""}
+           ${holiday ? "disabled" : ""}
           "></td>
         </tr>
       `;
@@ -151,6 +153,7 @@ function showMarkModal(date, daySchedule) {
   $("#toggleAll").on("change", toggleAllSelection);
   $(".markCheckbox").on("change", toggleSelection);
 
+  $("#toggleHoliday").off("click");
   $("#toggleHoliday").on("click", toggleHoliday);
   const data = getData(date.toLocaleDateString("en-in"));
   if (data.holiday) $("#toggleHoliday").text("Unmark Holiday");
@@ -206,7 +209,6 @@ async function initCalendar() {
   calendar = new SimpleCalendar("#calendarContainer", events);
   const container = $(".selected-date-info");
   const mark = $("<p>", { id: "mark", text: "Mark" }).on("click", () => {
-    console.log("clicked");
     const date = calendar.selectedDate;
     const day = date.getDay() - 1;
     const daySchedule = timetable[day];
