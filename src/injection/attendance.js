@@ -44,6 +44,7 @@ function showMarkModal(date, daySchedule) {
   $("#markModal").modal("show");
 
   const dateStr = date.toLocaleDateString("en-in");
+  const data = getData(dateStr);
   const modalBody = $("#markModalBody");
 
   if (!daySchedule || Object.keys(daySchedule).length === 0) {
@@ -51,6 +52,9 @@ function showMarkModal(date, daySchedule) {
     $("#toggleHoliday").hide();
     return;
   }
+
+  const message = `Select the classes you will attend on ${dateStr}:`;
+  modalBody.text(message);
 
   function toggleAllSelection() {
     const checked = $(this).is(":checked");
@@ -71,7 +75,6 @@ function showMarkModal(date, daySchedule) {
   }
 
   function toggleHoliday() {
-    const data = getData(date.toLocaleDateString("en-in"));
     if (data.holiday) {
       setData(date.toLocaleDateString("en-in"), {
         holiday: false,
@@ -107,13 +110,9 @@ function showMarkModal(date, daySchedule) {
     calendar.addEvents(generateEvents());
   }
 
-  const message = `Select the classes you will attend on ${dateStr}:`;
-  modalBody.text(message);
-
   function generateTableRows() {
     let rows = "";
     for (const [key, value] of Object.entries(daySchedule)) {
-      const data = getData(dateStr);
       const checked =
         !data.attendance || (data.attendance && data.attendance.includes(key));
       const holiday = data.holiday;
@@ -139,7 +138,9 @@ function showMarkModal(date, daySchedule) {
         <tr>
           <th>Hour</th>
           <th>Subject</th>
-          <th><input type="checkbox" id="toggleAll"></th>
+          <th><input type="checkbox" id="toggleAll"
+            ${data.holiday ? "disabled" : ""}
+          ></th>
         </tr>
       </thead>
       <tbody>
@@ -155,7 +156,6 @@ function showMarkModal(date, daySchedule) {
 
   $("#toggleHoliday").off("click");
   $("#toggleHoliday").on("click", toggleHoliday);
-  const data = getData(date.toLocaleDateString("en-in"));
   if (data.holiday) $("#toggleHoliday").text("Unmark Holiday");
   else $("#toggleHoliday").text("Mark Holiday");
   $("#toggleHoliday").show();
