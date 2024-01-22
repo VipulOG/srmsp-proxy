@@ -8,6 +8,13 @@ export default function configureRoutes(app) {
   app.get("/injection/*", (req, res) => {
     res.sendFile(process.cwd() + "/src" + req.originalUrl);
   });
+
+  app.get("/ping", (req, res) => {
+    console.log("Ping");
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "*");
+    res.send("pong");
+  });
   
   app.all("*", async (req, res) => {
     try {
