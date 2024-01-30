@@ -11,13 +11,18 @@ const postData = function (url, data, dataType = "json") {
   return $.post({ url, data, dataType });
 };
 
+const regNo = $(".sidenav-footer-subtitle").first().text();
+
 function getData(key) {
-  const data = localStorage.getItem(key);
-  return data ? JSON.parse(data) : {};
+  const data = localStorage.getItem(regNo);
+  if (!data) return {};
+  return JSON.parse(data)[key] || {};
 }
 
-function setData(key, data) {
-  localStorage.setItem(key, JSON.stringify(data));
+function setData(key, value) {
+  const data = JSON.parse(localStorage.getItem(regNo)) || {};
+  data[key] = value;
+  localStorage.setItem(regNo, JSON.stringify(data));
 }
 
 function createMarkModal() {
@@ -75,6 +80,7 @@ function showMarkModal(date, daySchedule) {
   }
 
   function toggleHoliday() {
+    const data = getData(date.toLocaleDateString("en-in"));
     if (data.holiday) {
       setData(date.toLocaleDateString("en-in"), {
         holiday: false,
