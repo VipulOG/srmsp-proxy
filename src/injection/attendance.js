@@ -171,7 +171,6 @@ function showMarkModal(date, daySchedule) {
 
 function generateEvents() {
   const events = [];
-  const today = new Date();
   const sessionEnd = new Date(sessionStart);
   sessionEnd.setMonth(sessionEnd.getMonth() + 6);
 
@@ -224,5 +223,110 @@ async function initCalendar() {
   container.append(mark);
 }
 
-initCalendar();
-createMarkModal();
+function showDisclaimer() {
+  const parent = $(".container");
+  const disclaimer = `
+  <div class="alert alert-info" role="info">
+    <strong>Heads-up:</strong>
+    <ol>
+      <li>
+        The expected attendance on the calendar is hit or miss, and if there's a miss, you can blame it on the professors who forget to mark.
+      </li>
+      <li>
+        The unmarked hours are more of an educated guess, as they're based on the current timetable, which might've been different in the past.
+      </li>
+      <li>
+        Calculating unmarked hours relies on past classes, so don't forget to mark holidays from the good ol' days.
+      </li>
+      <li>
+        Estimating future attendance depends on upcoming classes, so make sure to mark holidays in your crystal ball.
+      </li>
+    </ol>
+  </div>
+  `;
+  parent.prepend(disclaimer);
+}
+
+function calculateUnmarkedHours() {
+  const expectedTotalHours = {};
+
+  for (
+    let date = new Date(sessionStart);
+    date <= new Date(today);
+    date.setDate(date.getDate() + 1)
+  ) {
+    const data = getData(date.toLocaleDateString("en-in"));
+    if (data.holiday) continue;
+    const day = date.getDay() - 1;
+    const daySchedule = timetable[day];
+    if (!daySchedule) continue;
+    for (const [, value] of Object.entries(daySchedule)) {
+      const subjectName = value.subjectName;
+      if (!expectedTotalHours[subjectName]) expectedTotalHours[subjectName] = 0;
+      expectedTotalHours[subjectName]++;
+    }
+  }
+
+  for (const [, value] of Object.entries(courseWiseAttendance)) {
+    const subjectName = value.courseName;
+    if (!expectedTotalHours[subjectName]) expectedTotalHours[subjectName] = 0;
+    expectedTotalHours[subjectName] -= parseInt(value.maxHours);
+  }
+
+  return expectedTotalHours;
+}
+
+function showUnmarkedHoursTable() {
+  function generateUnmarkedTableRows() {
+    const unmarkedHours = calculateUnmarkedHours();
+    let rows = "";
+    for (const [key, value] of Object.entries(unmarkedHours)) {
+      if (value <= 0) continue;
+      rows += `
+      <tr>
+        <td>${key}</td>
+        <td>${value}</td>
+      </tr>
+    `;
+    }
+    return rows;
+  }
+
+  function generateUnmarkedTable() {
+    const tableHtml = `
+    <div class="card mb-4">
+      <div class="card-header bg-custom text-white">
+        <i class="fa fa-calculator"></i>
+        UNMARKED ATTENDANCE - During the Period:
+        <b>${sessionStart}</b> To <b>${today}</b>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table id="unmarkedTable" class="table mb-0">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Unmarked Hours</th>
+              </tr>
+            </thead>
+            <tbody>
+            ${generateUnmarkedTableRows()}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+    return tableHtml;
+  }
+
+  const table = generateUnmarkedTable();
+  $("#calendarContainer").before(table);
+}
+
+(async function () {
+  await initCalendar();
+  createMarkModal();
+  showDisclaimer();
+  showUnmarkedHoursTable();
+})();
