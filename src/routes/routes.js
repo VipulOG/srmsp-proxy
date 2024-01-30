@@ -44,10 +44,12 @@ export default function configureRoutes(app) {
 
       if (axiosResponse.headers["content-type"].includes("text/html")) {
         const html = await streamToString(axiosResponse.data);
-        const newHtml = html.replace(
-          new RegExp(axiosInstance.defaults.baseURL, "g"),
-          process.env.host
-        );
+        
+        const regex = /https?:\/\/sp\.srmist\.edu\.in[^\s'">]*/g;
+        const newHtml = html.replace(regex, (match) => {
+          const url = new URL(match);
+          return url.pathname;
+        });
 
         if (req.originalUrl === attendancePageURL) {
           handleAttendancePage(req, res, newHtml);
