@@ -1,6 +1,10 @@
 const calendarScriptURL =
   "https://vipul.is-a.dev/SimpleCalendar.js/src/SimpleCalendar.js";
 
+const sessionStartStr = formatDate(sessionStart);
+const sessionEndStr = formatDate(sessionEnd);
+const lastUpdatedStr = formatDate(lastUpdated);
+
 let timetable;
 let calendar;
 
@@ -54,10 +58,10 @@ function addUnmarkedHoursTable() {
 
     for (
       let date = new Date(sessionStart);
-      date <= new Date(today);
+      date <= lastUpdated;
       date.setDate(date.getDate() + 1)
     ) {
-      const data = getData(date.toLocaleDateString("en-in"));
+      const data = getData(formatDate(date));
       if (data.holiday) continue;
 
       const day = date.getDay() - 1;
@@ -103,7 +107,7 @@ function addUnmarkedHoursTable() {
       <div class="card-header bg-custom text-white">
         <i class="fa fa-calculator"></i>
         UNMARKED ATTENDANCE - During the Period:
-        <b>${sessionStart}</b> To <b>${today}</b>
+        <b>${sessionStartStr}</b> To <b>${lastUpdatedStr}</b>
       </div>
       <div class="card-body p-0">
         <div class="table-responsive">
@@ -132,18 +136,16 @@ function addUnmarkedHoursTable() {
 function updateCalendarEvents() {
   if (!calendar) return;
   const events = [];
-  const sessionEnd = new Date(sessionStart);
-  sessionEnd.setMonth(sessionEnd.getMonth() + 6);
 
   let expectedTotalClasses = totalClasses;
   let expectedTotalPresent = totalPresent;
 
   for (
-    let date = new Date(today);
+    let date = new Date(lastUpdated);
     date <= sessionEnd;
     date.setDate(date.getDate() + 1)
   ) {
-    const data = getData(date.toLocaleDateString("en-in"));
+    const data = getData(formatDate(date));
     if (data.holiday) {
       events.push({ date: new Date(date), title: "Holiday" });
       continue;
@@ -172,7 +174,7 @@ function addCalendar() {
   function showMarkModal(date, daySchedule) {
     $("#markModal").modal("show");
 
-    const dateStr = date.toLocaleDateString("en-in");
+    const dateStr = formatDate(date);
     const data = getData(dateStr);
     const modalBody = $("#markModalBody");
 
@@ -204,9 +206,10 @@ function addCalendar() {
     }
 
     function toggleHoliday() {
-      const data = getData(date.toLocaleDateString("en-in"));
+      const dateStr = formatDate(date);
+      const data = getData(dateStr);
       if (data.holiday) {
-        setData(date.toLocaleDateString("en-in"), {
+        setData(dateStr, {
           holiday: false,
           attendance: undefined,
         });
@@ -216,7 +219,7 @@ function addCalendar() {
         $(".markCheckbox").prop("disabled", false);
         $("#toggleHoliday").text("Mark Holiday");
       } else {
-        setData(date.toLocaleDateString("en-in"), {
+        setData(dateStr, {
           holiday: true,
           attendance: [],
         });
@@ -231,7 +234,7 @@ function addCalendar() {
 
     function saveAttendance() {
       const boxes = $(".markCheckbox");
-      setData(date.toLocaleDateString("en-in"), {
+      setData(formatDate(date), {
         holiday: false,
         attendance: [...boxes.filter(":checked")].map((box) => box.value),
       });

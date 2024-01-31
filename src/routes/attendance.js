@@ -15,7 +15,7 @@ export function handleAttendancePage(req, res, html) {
   const sessionStart = root
     .querySelector("div.card-header.bg-custom.text-white > b:nth-child(2)")
     .text.trim();
-  const today = root
+  const lastUpdated = root
   .querySelector("div.card-header.bg-custom.text-white > b:nth-child(3)")
   .text.trim();
 
@@ -28,8 +28,10 @@ export function handleAttendancePage(req, res, html) {
   <script>
     const totalClasses = ${totalClasses};
     const totalPresent = ${totalPresent};
-    const sessionStart = "${sessionStart}";
-    const today = "${today}";
+    const sessionStart = parseDate("${sessionStart}");
+    const lastUpdated = parseDate("${lastUpdated}");
+    const sessionEnd = new Date(sessionStart);
+    sessionEnd.setMonth(sessionEnd.getMonth() + 6);
     const timetablePageURL = "${timetablePageURL}";
     const courseWiseAttendance = ${JSON.stringify(courseWiseAttendance)};
   </script>

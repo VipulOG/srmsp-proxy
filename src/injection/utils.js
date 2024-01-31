@@ -19,3 +19,19 @@ function setData(key, value) {
   data[key] = value;
   localStorage.setItem(regNo, JSON.stringify(data));
 }
+
+function formatDate(date) {
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).replace(/\s/g, '/');
+}
+
+function parseDate(dateString) {
+  const parts = dateString.split('/');
+  const year = parseInt(parts[2], 10);
+  const month = new Date(Date.parse(parts[1] + ' 1, ' + year)).getMonth() + 1;
+  const day = parseInt(parts[0], 10);
+  return new Date(year, month - 1, day);
+}
