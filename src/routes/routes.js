@@ -1,8 +1,9 @@
 import { axiosInstance } from "../axiosConfig.js";
 import { streamToString } from "../utils.js";
+import { handleHRDPage } from "./hrd.js";
 import { handleAttendancePage } from "./attendance.js";
 import { handleTimetablePage } from "./timetable.js";
-import { attendancePageURL, timetablePageURL } from "../constants.js";
+import * as constants from "../constants.js";
 
 export default function configureRoutes(app) {
   app.get("/injection/*", (req, res) => {
@@ -15,7 +16,7 @@ export default function configureRoutes(app) {
     res.set("Access-Control-Allow-Methods", "*");
     res.send("pong");
   });
-  
+
   app.all("*", async (req, res) => {
     try {
       console.log("Proxy Request:", req.method, req.originalUrl);
@@ -34,32 +35,40 @@ export default function configureRoutes(app) {
       });
 
       console.log("Proxy Request Success:", req.method, req.originalUrl);
-      if (req.method === "POST") console.log("Body:", req.body);
 
       const responseHeaders = { ...axiosResponse.headers };
       delete responseHeaders["content-length"];
-      res.set(responseHeaders);
 
+      res.set(responseHeaders);
       res.status(axiosResponse.status);
 
       if (axiosResponse.headers["content-type"].includes("text/html")) {
         const html = await streamToString(axiosResponse.data);
-        
-        const regex = /https?:\/\/sp\.srmist\.edu\.in[^\s'">]*/g;
-        const newHtml = html.replace(regex, (match) => {
-          const url = new URL(match);
-          return url.pathname;
-        });
-
-        if (req.originalUrl === attendancePageURL) {
-          handleAttendancePage(req, res, newHtml);
-        } else if (req.originalUrl === timetablePageURL) {
-          handleTimetablePage(req, res, newHtml);
-        } else res.send(newHtml);
-      } else axiosResponse.data.pipe(res);
+        await handleHtmlResponse(html, req, res);
+      } else {
+        axiosResponse.data.pipe(res);
+      }
     } catch (error) {
       console.error("Proxy Request Error:", error.message, error.stack);
       res.status(500).send("Internal Server Error");
     }
   });
+}
+
+async function handleHtmlResponse(html, req, res) {
+  const regex = /https?:\/\/sp\.srmist\.edu\.in[^\s'">]*/g;
+  html = html.replace(regex, (match) => {
+    const url = new URL(match);
+    return url.pathname;
+  });
+
+  if (req.originalUrl === constants.HRDPageURL) {
+    handleHRDPage(req, res, html);
+  } else if (req.originalUrl === constants.attendancePageURL) {
+    handleAttendancePage(req, res, html);
+  } else if (req.originalUrl === constants.timetablePageURL) {
+    handleTimetablePage(req, res, html);
+  } else {
+    res.send(html);
+  }
 }
