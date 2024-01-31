@@ -28,6 +28,25 @@ function createMarkModal() {
 `);
 }
 
+function createHolidayModal() {
+  $("body").append(`
+  <div id="holidayModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-custom">
+          <h5 class="modal-title text-white">Holidays</h5>
+          <button class="close" type="button" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body" id="holidayModalBody"></div>
+        <div class="modal-footer">
+          <button class="btn btn-dark lift" type="button" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+`);
+}
+
 function addDisclaimer() {
   const parent = $(".container");
   const disclaimer = `
@@ -295,9 +314,92 @@ function addCalendar() {
     updateToggleAllCheckbox();
   }
 
+  function showHolidayModal() {
+    $("#holidayModal").modal("show");
+
+    const modalBody = $("#holidayModalBody");
+    const holidays = [];
+
+    for (
+      let date = new Date(sessionStart);
+      date <= sessionEnd;
+      date.setDate(date.getDate() + 1)
+    ) {
+      const dateStr = formatDate(date);
+      const data = getData(dateStr);
+      if (data.holiday) holidays.push(dateStr);
+    }
+
+    if (holidays.length === 0) {
+      modalBody.text("No holidays marked.");
+      return;
+    }
+
+    const message = `Holidays marked during the period: ${sessionStartStr} to ${lastUpdatedStr}`;
+    modalBody.text(message);
+
+    function toggleHoliday() {
+      const date = parseDate($(this).attr("date"));
+      if ($(this).attr("holiday")) {
+        setData(formatDate(date), {
+          holiday: false,
+          attendance: undefined,
+        });
+        $(this).text("Mark");
+        $(this).removeAttr("holiday");
+        $(this).removeClass("btn-danger");
+        $(this).addClass("btn-success");
+      } else {
+        setData(formatDate(date), {
+          holiday: true,
+          attendance: [],
+        });
+        $(this).text("Unmark");
+        $(this).attr("holiday", true);
+        $(this).addClass("btn-danger");
+        $(this).removeClass("btn-success");
+      }
+      updateCalendarEvents();
+    }
+
+    function generateTableRows() {
+      let rows = "";
+      for (const date of holidays) {
+        rows += `
+        <tr>
+          <td>${date}</td>
+          <td><button class="btn btn-danger btn-sm" date="${date}" holiday="true">Unmark</button></td>
+        </tr>
+      `;
+      }
+      return rows;
+    }
+
+    const tableHtml = `
+    <br>
+    <table id="holidayModalTable" class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${generateTableRows()}
+      </tbody>
+    </table>
+  `;
+
+    modalBody.append(tableHtml);
+    $("#holidayModalTable button").on("click", toggleHoliday);
+  }
+
   updateCalendarEvents();
 
   const container = $(".selected-date-info");
+  const wrapper = $("<div>", { id: "extraBtnWrapper" });
+  container.append(wrapper);
+
   const mark = $("<p>", { id: "mark", text: "Mark" }).on("click", () => {
     const date = calendar.selectedDate;
     const day = date.getDay() - 1;
@@ -305,7 +407,13 @@ function addCalendar() {
     showMarkModal(date, daySchedule);
   });
 
-  container.append(mark);
+  const holiday = $("<p>", { id: "holiday", text: "Holidays" }).on(
+    "click",
+    showHolidayModal
+  );
+
+  wrapper.append(mark);
+  wrapper.append(holiday);
 }
 
 (async function () {
@@ -313,6 +421,7 @@ function addCalendar() {
   timetable = await postAsync(timetablePageURL);
   calendar = new SimpleCalendar("#calendarContainer");
   createMarkModal();
+  createHolidayModal();
   addDisclaimer();
   addUnmarkedHoursTable();
   addCalendar();
