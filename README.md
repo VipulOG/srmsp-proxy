@@ -11,11 +11,14 @@ I can't read minds, but I'm guessing you're wondering, "Did anyone even need thi
 2. **Dynamic Calendar Widget:** Imagine a world where your attendance stats are visualized with a sleek calendar. Well, imagine no more!
 3. **Unmarked Hours Table:** Uncover the mysteries of unmarked hours – those sneaky attendance hours faculty forget to mark. We got a table for that!
 
-## Dive In
-- Clone the repo: `git clone https://github.com/VipulOG/srmsp-proxy.git`
-- Install the magic: `npm install`
-- Fire up the server: `npm start`
-- Dive into the app at [http://localhost:3000](http://localhost:3000) in your browser.
+## Usage Guide
+While I do provide a hosted version at [srmsp-proxy.web.app](https://srmsp-proxy.web.app/), it may experience slower response times. For a faster and more responsive usage prefer:
+
+### **Local Installation:**
+   - Clone the repo: `git clone https://github.com/VipulOG/srmsp-proxy.git`
+   - Install the magic: `npm install`
+   - Fire up the server: `npm start`
+   - Dive into the app at [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Got Ideas or Fixes?
 Feel like adding some glitter to this project? Fork it, sprinkle your magic, and send a pull request.
