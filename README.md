@@ -1,7 +1,7 @@
 # srmsp-proxy
 
 ## Overview
-This project aims to simplify attendance management for SRM University students through a personalized calendar and additional insights into their academic schedule.
+This project aims to enhance the SRM University student experience by serving as an enhancement proxy for the student portal. It simplifies attendance management through a personalized calendar and provides additional insights into the academic schedule.
 
 ## But why?
 I can't read minds, but I'm guessing you're wondering, "Did anyone even need this?" Frankly, who knows? I built this for my sanity, and if it helps a fellow student, why not? We've all got our unique struggles, and maybe this is the solution someone's been silently wishing for.
