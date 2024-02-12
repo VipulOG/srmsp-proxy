@@ -159,8 +159,12 @@ function updateCalendarEvents() {
   let expectedTotalClasses = totalClasses;
   let expectedTotalPresent = totalPresent;
 
+  const today = new Date();
+  const tommorrow = new Date();
+  tommorrow.setDate(today.getDate() + 1);
+
   for (
-    let date = new Date(lastUpdated);
+    let date = new Date(tommorrow);
     date <= sessionEnd;
     date.setDate(date.getDate() + 1)
   ) {
@@ -409,7 +413,7 @@ function addCalendar() {
 
   const holiday = $("<p>", { id: "holiday", text: "Holidays" }).on(
     "click",
-    showHolidayModal
+    showHolidayModal,
   );
 
   wrapper.append(mark);
